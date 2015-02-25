@@ -1,3 +1,11 @@
 language: java
 
 before_install: gradle
+install: ./gradlew assemble -PscalaVersion=$SCALA_VERSION
+script: ./gradlew check -PscalaVersion=$SCALA_VERSION
+
+env:
+  - SCALA_VERSION=2.9.1
+  - SCALA_VERSION=2.9.2
+  - SCALA_VERSION=2.10.4
+  - SCALA_VERSION=2.11.5
