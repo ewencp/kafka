@@ -231,6 +231,7 @@ class WorkerSourceTask implements WorkerTask {
             // to persistent storage
 
             // Next we need to wait for all outstanding messages to finish sending
+            log.info("{} flushing {} outstanding messages for offset commit", this, outstandingMessages.size());
             while (!outstandingMessages.isEmpty()) {
                 try {
                     long timeoutMs = timeout - time.milliseconds();
@@ -243,7 +244,12 @@ class WorkerSourceTask implements WorkerTask {
                     }
                     this.wait(timeoutMs);
                 } catch (InterruptedException e) {
-                    // ignore
+                    // We can get interrupted if we take too long committing when the work thread shutdown is requested,
+                    // requiring a forcible shutdown. Give up since we can't safely commit any offsets, but also need
+                    // to stop immediately
+                    log.error("{} Interrupted while flushing messages, offsets will not be committed", this);
+                    finishFailedFlush();
+                    return false;
                 }
             }
 
