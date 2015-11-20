@@ -203,7 +203,7 @@ class WorkerSourceTask implements WorkerTask {
             removed = outstandingMessagesBacklog.remove(record);
         // But if neither one had it, something is very wrong
         if (removed == null) {
-            log.error("Saw callback for record that was not present in the outstanding message set: "
+            log.error("CRITICAL Saw callback for record that was not present in the outstanding message set: "
                     + "{}", record);
         } else if (flushing && outstandingMessages.isEmpty()) {
             // flush thread may be waiting on the outstanding messages to clear
@@ -238,7 +238,7 @@ class WorkerSourceTask implements WorkerTask {
                     if (timeoutMs <= 0) {
                         log.error(
                                 "Failed to flush {}, timed out while waiting for producer to flush outstanding "
-                                        + "messages", this.toString());
+                                        + "messages, {} left ({})", this, outstandingMessages.size(), outstandingMessages);
                         finishFailedFlush();
                         return false;
                     }
@@ -302,7 +302,6 @@ class WorkerSourceTask implements WorkerTask {
             return false;
         }
 
-        finishSuccessfulFlush();
         log.info("Finished {} commitOffsets successfully in {} ms",
                 this, time.milliseconds() - started);
         return true;
