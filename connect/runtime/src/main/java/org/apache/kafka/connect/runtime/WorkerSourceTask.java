@@ -302,6 +302,7 @@ class WorkerSourceTask implements WorkerTask {
             return false;
         }
 
+        finishSuccessfulFlush();
         log.info("Finished {} commitOffsets successfully in {} ms",
                 this, time.milliseconds() - started);
         return true;
@@ -314,7 +315,7 @@ class WorkerSourceTask implements WorkerTask {
         flushing = false;
     }
 
-    private void finishSuccessfulFlush() {
+    private synchronized void finishSuccessfulFlush() {
         // If we were successful, we can just swap instead of replacing items back into the original map
         IdentityHashMap<ProducerRecord<byte[], byte[]>, ProducerRecord<byte[], byte[]>> temp = outstandingMessages;
         outstandingMessages = outstandingMessagesBacklog;
