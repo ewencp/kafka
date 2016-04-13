@@ -13,7 +13,6 @@
 package kafka.api
 
 import java.util
-import kafka.coordinator.GroupCoordinator
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.clients.producer.{ProducerConfig, ProducerRecord}
 import org.apache.kafka.common.record.TimestampType
@@ -27,6 +26,8 @@ import org.junit.{Before, Test}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.Buffer
 import org.apache.kafka.common.internals.TopicConstants
+
+import scala.util.Random
 
 /**
  * Integration tests for the new consumer that cover basic usage as well as server failures
@@ -50,7 +51,7 @@ abstract class BaseConsumerTest extends IntegrationTestHarness with Logging {
   this.serverConfig.setProperty(KafkaConfig.GroupMinSessionTimeoutMsProp, "100") // set small enough session timeout
   this.serverConfig.setProperty(KafkaConfig.GroupMaxSessionTimeoutMsProp, "30000")
   this.producerConfig.setProperty(ProducerConfig.ACKS_CONFIG, "all")
-  this.consumerConfig.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-test")
+  this.consumerConfig.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-test" + new Random().nextInt())
   this.consumerConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
   this.consumerConfig.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
   this.consumerConfig.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, "100")
