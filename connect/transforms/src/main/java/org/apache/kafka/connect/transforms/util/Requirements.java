@@ -32,6 +32,12 @@ public class Requirements {
         }
     }
 
+    public static void requireNoSchema(Schema schema, String purpose) {
+        if (schema != null) {
+            throw new DataException("Schema should not exist for [" + purpose + "]");
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static Map<String, Object> requireMap(Object value, String purpose) {
         if (!(value instanceof Map)) {
