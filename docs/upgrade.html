@@ -58,6 +58,8 @@
         whether there is offline log directory. </li>
     <li>Added KafkaStorageException which is a retriable exception. KafkaStorageException will be converted to NotLeaderForPartitionException in the response
         if the version of client's FetchRequest or ProducerRequest does not support KafkaStorageException. </li>
+    <li>Offsets topic retention changed default values from 24 hours to 7 days. If you prefer the older, shorter value,
+        override the <code>offsets.retention.minutes</code> in your broker configuration.</li>
 </ul>
 
 <h5><a id="upgrade_100_new_protocols" href="#upgrade_100_new_protocols">New Protocol Versions</a></h5>

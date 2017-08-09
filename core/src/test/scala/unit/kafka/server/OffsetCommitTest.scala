@@ -252,7 +252,7 @@ class OffsetCommitTest extends ZooKeeperTestHarness {
     assertEquals(2L, simpleConsumer.fetchOffsets(fetchRequest).requestInfo.get(topicPartition).get.offset)
 
     // v1 version commit request with commit timestamp set to now - two days
-    // committed offset should expire
+    // committed offset should not expire
     val commitRequest2 = OffsetCommitRequest(
       groupId = group,
       requestInfo = immutable.Map(topicPartition -> OffsetAndMetadata(3L, "metadata", Time.SYSTEM.milliseconds - 2*24*60*60*1000L)),
@@ -260,29 +260,40 @@ class OffsetCommitTest extends ZooKeeperTestHarness {
     )
     assertEquals(Errors.NONE, simpleConsumer.commitOffsets(commitRequest2).commitStatus.get(topicPartition).get)
     Thread.sleep(retentionCheckInterval * 2)
+    assertEquals(3L, simpleConsumer.fetchOffsets(fetchRequest).requestInfo.get(topicPartition).get.offset)
+
+    // v1 version commit request with commit timestamp set to now - eight days
+    // committed offset should expire
+    val commitRequest3 = OffsetCommitRequest(
+      groupId = group,
+      requestInfo = immutable.Map(topicPartition -> OffsetAndMetadata(3L, "metadata", Time.SYSTEM.milliseconds - 8*24*60*60*1000L)),
+      versionId = 1
+    )
+    assertEquals(Errors.NONE, simpleConsumer.commitOffsets(commitRequest3).commitStatus.get(topicPartition).get)
+    Thread.sleep(retentionCheckInterval * 2)
     assertEquals(-1L, simpleConsumer.fetchOffsets(fetchRequest).requestInfo.get(topicPartition).get.offset)
 
     // v2 version commit request with retention time set to 1 hour
     // committed offset should not expire
-    val commitRequest3 = OffsetCommitRequest(
+    val commitRequest4 = OffsetCommitRequest(
       groupId = group,
       requestInfo = immutable.Map(topicPartition -> OffsetAndMetadata(4L, "metadata", -1L)),
       versionId = 2,
       retentionMs = 1000 * 60 * 60L
     )
-    assertEquals(Errors.NONE, simpleConsumer.commitOffsets(commitRequest3).commitStatus.get(topicPartition).get)
+    assertEquals(Errors.NONE, simpleConsumer.commitOffsets(commitRequest4).commitStatus.get(topicPartition).get)
     Thread.sleep(retentionCheckInterval * 2)
     assertEquals(4L, simpleConsumer.fetchOffsets(fetchRequest).requestInfo.get(topicPartition).get.offset)
 
     // v2 version commit request with retention time set to 0 second
     // committed offset should expire
-    val commitRequest4 = OffsetCommitRequest(
+    val commitRequest5 = OffsetCommitRequest(
       groupId = "test-group",
       requestInfo = immutable.Map(TopicAndPartition(topic, 0) -> OffsetAndMetadata(5L, "metadata", -1L)),
       versionId = 2,
       retentionMs = 0L
     )
-    assertEquals(Errors.NONE, simpleConsumer.commitOffsets(commitRequest4).commitStatus.get(topicPartition).get)
+    assertEquals(Errors.NONE, simpleConsumer.commitOffsets(commitRequest5).commitStatus.get(topicPartition).get)
     Thread.sleep(retentionCheckInterval * 2)
     assertEquals(-1L, simpleConsumer.fetchOffsets(fetchRequest).requestInfo.get(topicPartition).get.offset)
 
